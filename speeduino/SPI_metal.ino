@@ -1,39 +1,14 @@
-#if defined (CORE_TEENSY35)
-#include <kinetis.h>
-#include <Arduino.h>
-#include <HardwareSerial.h>
+#if defined (BARRA)
+#include "SPI_metal.h"
 
-//#define USE_SPI2
-
-#define CS0_1 1  // first instance of MC33810
-#define CS0_2 2  // second instance of MC33810
-#define CS0_3 4  // Flash
-#define CS0_4 8  // available - not used
-#define CS0_5 16 // available - not used
-#if defined (USE_SPI2)
-#define CS2_1 1
-#define CS2_2 2
-#endif
-
-#define START_INSTANCE ~SPI_MCR_HALT
-#define CLEAR_SR 0x0 | SPI_SR_TCF | SPI_SR_EOQF | SPI_SR_TFUF | SPI_SR_TFFF | SPI_SR_RFOF | SPI_SR_RFDF
-
-volatile uint8_t SPI0_CS = 0;  // 2 purposes, rcv isr tx-cs-used, is transmit active.
-volatile uint8_t SPI1_CS = 0;  // single purpose, is transmit active.
-#if defined (USE_SPI2)
-volatile uint8_t SPI2_CS = 0;  // 2 purposes, rcv isr tx-cs-used, is transmit active.
-#endif
-
-void initSPI();
-void sendSPI0(uint16_t, uint8_t);
-void sendSPI1(uint16_t);
-void spi0_isr();
-void spi1_isr();
-
-#if defined (USE_SPI2)
-void spi2_isr();
-void sendSPI2(uint16_t, uint8_t);
-#endif
+// This code gives direct access to the hardware SPI functions provided by the Teensy 3.5
+// Transmissions occur immediately data is written using sendSPI[n]().
+// Return from the peripheral is serviced by interrupt.
+// A following transmission will be delayed if it occurs within the time between sending the previous and the
+// end of the receive ISR for the previous.
+// At 3MHz baud rate, there is approx 5uS between initiating a (non-blocking) transmit and completing a receive,
+// (using no receive processing).
+// Transmission is not delayed, when the gap between transmissions is more than 5 uSec plus isr execution time.
 
 void initSPI()  // setup for 3 SPI instances and all available Teensy 3.5 pins
 {
@@ -219,6 +194,7 @@ void spi2_isr(void) // receive ISR
 }
 #endif
 
+/*
 // assumes Flash only used during startup, leaving MC33810 operations unimpeded, except for any attempt to overlap transmits,
 // in which case new transmit is paused until previous transmit completes.
 void sendSPI0(uint16_t data, uint8_t chipSel)
@@ -246,11 +222,24 @@ void sendSPI0(uint16_t data, uint8_t chipSel)
   SPI0_PUSHR = pushVal; // load the value into the double buffered register for transmission
   SPI0_MCR &= START_INSTANCE;   // transmit
 }
+*/
+
+inline void sendSPIO0_1(data) // ign and inj 1-4
+{
+  pushVal |= SPI_PUSHR_CTAS(0) | SPI_PUSHR_PCS(chipSel) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT | data; // MC33810
+  SPI0_MCR &= START_INSTANCE;   // transmit
+}
+
+inline void sendSPIO0_2() // ign and inj 5-8
+{
+  
+  SPI0_MCR &= START_INSTANCE;   // transmit
+}
 
 void sendSPI1(uint8_t val)  // support a single peripheral (Teensy 3.5 limitation)
 {
   // prevent new transmit before receive complete
-  while (SPI1_CS != 0){} // EOQF cleared at end of receive processing
+  while (SPI1_CS != 0){} // cleared at end of receive processing
   SPI1_CS = 1;
   SPI1_PUSHR |= SPI_PUSHR_CTAS(0) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT | SPI_PUSHR_PCS(1) | val;
   SPI1_MCR &= START_INSTANCE;

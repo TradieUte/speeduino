@@ -38,8 +38,9 @@
     #define CORE_TEENSY35
     #define BOARD_H "board_teensy35.h"
     #define SD_LOGGING //SD logging enabled by default for Teensy 3.5 as it has the slot built in
-//    #define DIAG
+    #define DIAG
 //    #define KNOCK
+    #define BARRA
     #define DSERIAL Serial1  // Barra and X3 beta version
 
   #elif defined(__IMXRT1062__)

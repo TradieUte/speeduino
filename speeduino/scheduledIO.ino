@@ -3,6 +3,24 @@
 #include "globals.h"
 #include "timers.h"
 
+#if defined (BARRA)
+#include "SPI_metal.h"
+  inline void openInjector1() { openInjector1_MC33810(); }
+  inline void closeInjector1() { closeInjector1_MC33810(); }
+  inline void openInjector2() { openInjector2_MC33810(); }
+  inline void closeInjector2() { closeInjector2_MC33810(); }
+  inline void openInjector3() { openInjector3_MC33810(); }
+  inline void closeInjector3() { closeInjector3_MC33810(); }
+  inline void openInjector4() { openInjector4_MC33810(); }
+  inline void closeInjector4() { closeInjector4_MC33810(); }
+  inline void openInjector5() { openInjector5_MC33810(); }
+  inline void closeInjector5() { closeInjector5_MC33810(); }
+  inline void openInjector6() { openInjector6_MC33810(); }
+  inline void closeInjector6() { closeInjector6_MC33810(); }
+  inline void openInjector7() { openInjector7_MC33810(); }
+  inline void closeInjector7() { closeInjector7_MC33810(); }
+  inline void openInjector8() { openInjector8_MC33810(); }
+  inline void closeInjector8() { closeInjector8_MC33810(); }#else
 #ifndef USE_MC33810
   inline void openInjector1() { *inj1_pin_port |= (inj1_pin_mask); BIT_SET(currentStatus.status1, BIT_STATUS1_INJ1); }
   inline void closeInjector1() { *inj1_pin_port &= ~(inj1_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ1); }
@@ -38,6 +56,7 @@
   inline void closeInjector7() { closeInjector7_MC33810(); }
   inline void openInjector8() { openInjector8_MC33810(); }
   inline void closeInjector8() { closeInjector8_MC33810(); }
+#endif
 #endif
 
 // These are for Semi-Sequential and 5 Cylinder injection
