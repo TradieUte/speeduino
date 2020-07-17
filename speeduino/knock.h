@@ -1,5 +1,6 @@
 #ifndef KNOCK_H
 #define KNOCK_H
+#if !defined(SPI_METAL)
 
 #include "globals.h"
 
@@ -61,7 +62,8 @@ int integratorGain = 0;
 
 #define OPEN_KNOCK_WINDOW() *knock_win_pin_port |= (knock_win_pin_mask) 
 #define CLOSE_KNOCK_WINDOW() *knock_win_pin_port &= ~(knock_win_pin_mask)
-#define CS0_ASSERT() digitalWrite(CS0, LOW)
-#define CS0_RELEASE() digitalWrite(CS0, HIGH)
+//#define CS0_ASSERT() digitalWrite(CS0, LOW)
+//#define CS0_RELEASE() digitalWrite(CS0, HIGH)
 
+#endif
 #endif

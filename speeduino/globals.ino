@@ -213,10 +213,10 @@ byte pinBaro; //Pin that an al barometric pressure sensor is attached to (If use
 byte pinResetControl; // Output pin used control resetting the Arduino
 byte pinFuelPressure;
 byte pinOilPressure;
+#if !defined(SPI_METAL)
 byte CS0;  // TPC8101 - knock
-byte CS1;  // FLASH on PCB
-byte CS2;  // DBW pocessor
 byte SCK0; // alternative clock - leave LED_BUILTIN = 13 available
+#endif
 #ifdef USE_MC33810
   //If the MC33810 IC\s are in use, these are the chip select pins
   byte pinMC33810_1_CS;

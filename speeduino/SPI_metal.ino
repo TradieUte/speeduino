@@ -1,17 +1,21 @@
-#if defined (BARRA)
+#if defined(SPI_METAL)
 #include "SPI_metal.h"
+#include "globals.h"
 
 // This code gives direct access to the hardware SPI functions provided by the Teensy 3.5
-// Transmissions occur immediately data is written using sendSPI[n]().
+// Transmissions occur immediately data is written to the transmission register and channel placed in run mode.
 // Return from the peripheral is serviced by interrupt.
 // A following transmission will be delayed if it occurs within the time between sending the previous and the
-// end of the receive ISR for the previous.
-// At 3MHz baud rate, there is approx 5uS between initiating a (non-blocking) transmit and completing a receive,
+// end of the receive ISR for the previous. (Chip selects can't overlap.)
+// At 3MHz baud rate, there is approx 5.3uS between initiating a (non-blocking) transmit and completing a receive,
 // (using no receive processing).
 // Transmission is not delayed, when the gap between transmissions is more than 5 uSec plus isr execution time.
+// Note that pin selection of chip-select is built into the SPI hardware and it is not necessary to define pin 
+// directions or use, using pinMode() types of functions.
 
-void initSPI()  // setup for 3 SPI instances and all available Teensy 3.5 pins
+void initSPI()  // setup for 3 SPI instances and all available Teensy 3.5 pins.
 {
+  // All available SPI port MUX is listed; select as required
   // SPI0
   PORTC_PCR4 |= PORT_PCR_MUX(2);            // PORTC4 - SPI0_PCS0 (Teensy - 10) (CS0_1)
   PORTC_PCR3 |= PORT_PCR_MUX(2);            // PORTC3 - SPI0_PCS1 (Teensy - 9)  (CS0_2)
@@ -35,24 +39,24 @@ void initSPI()  // setup for 3 SPI instances and all available Teensy 3.5 pins
   //  PORTA_PCR17 |= PORT_PCR_MUX(2);            // PORTA17 - SPI0_SIN  (Teensy - 39)
 
   // SPI1
-  PORTB_PCR10 |= PORT_PCR_MUX(2);           // PORTB10 - SPI1_PCS0 (Teensy - 31)  (CS2_1)
+  PORTB_PCR10 |= PORT_PCR_MUX(2);           // PORTB10 - SPI1_PCS0 (Teensy - 31)  (CS1_1)
                                             // NO SPI1_PCS1 or SPI1_PCS2 pins on Teensy 3.5 (SPI module supports the features)
   PORTB_PCR11 |= PORT_PCR_MUX(2);           // PORTB11 - SPI1_SCK  (Teensy - 32)
-  PORTB_PCR16 |= PORT_PCR_MUX(2);           // PORTB16 - SPI1_SOUT (Teensy - 0)
-  PORTB_PCR17 |= PORT_PCR_MUX(2);           // PORTB17 - SPI1_SIN  (Teensy - 1)
+  PORTD_PCR6  |= PORT_PCR_MUX(7);            // PORTD6 - SPI1_SOUT (Teensy - 21)
+  PORTD_PCR7  |= PORT_PCR_MUX(7);            // PORTD3 - SPI1_SIN  (Teensy - 5)
   // SPI1 ALT PINS
   // Be aware of Teensy pin overlaps on other SPI instances.
+  //  PORTB_PCR16 |= PORT_PCR_MUX(2);           // PORTB16 - SPI1_SOUT (Teensy - 0)
+  //  PORTB_PCR17 |= PORT_PCR_MUX(2);           // PORTB17 - SPI1_SIN  (Teensy - 1)
   //  PORTD_PCR4  |= PORT_PCR_MUX(7);            // PORTD4 - SPI1_PCS0 (Teensy - 6)
-  //  PORTD_PCR6  |= PORT_PCR_MUX(7);            // PORTD6 - SPI1_SOUT (Teensy - 21)
   //  PORTD_PCR5  |= PORT_PCR_MUX(7);            // PORTD1 - SPI1_SCK  (Teensy - 20)
-  //  PORTD_PCR7  |= PORT_PCR_MUX(7);            // PORTD3 - SPI1_SIN  (Teensy - 5)
-
+  
   // SPI2 *** ALL ON POGO PINS ****
-//  PORTB_PCR20 |= PORT_PCR_MUX(2);           // PORTB20 - SPI2_PCS0 (Teensy - 43) (CS2_1)
-//  PORTD_PCR15 |= PORT_PCR_MUX(2);           // PORTD15 - SPI2_PCS1 (Teensy - 54) (CS2_2)
-//  PORTB_PCR21 |= PORT_PCR_MUX(2);           // PORTB21 - SPI2_SCK  (Teensy - 46)
-//  PORTB_PCR22 |= PORT_PCR_MUX(2);           // PORTB22 - SPI2_SOUT (Teensy - 44)
-//  PORTB_PCR23 |= PORT_PCR_MUX(2);           // PORTB23 - SPI2_SIN  (Teensy - 45)
+  PORTB_PCR20 |= PORT_PCR_MUX(2);           // PORTB20 - SPI2_PCS0 (Teensy - 43) (CS2_1)
+  PORTD_PCR15 |= PORT_PCR_MUX(2);           // PORTD15 - SPI2_PCS1 (Teensy - 54) (CS2_2)
+  PORTB_PCR21 |= PORT_PCR_MUX(2);           // PORTB21 - SPI2_SCK  (Teensy - 46)
+  PORTB_PCR22 |= PORT_PCR_MUX(2);           // PORTB22 - SPI2_SOUT (Teensy - 44)
+  PORTB_PCR23 |= PORT_PCR_MUX(2);           // PORTB23 - SPI2_SIN  (Teensy - 45)
   // ALT PINS
   //  PORTD_PCR11  |= PORT_PCR_MUX(2);           // PORTD11 - SPI2_PCS0 (Teensy - 55)
                                                  // NO SPI2_PCS1
@@ -60,6 +64,7 @@ void initSPI()  // setup for 3 SPI instances and all available Teensy 3.5 pins
   //  PORTD_PCR13  |= PORT_PCR_MUX(2);           // PORTD13 - SPI2_SOUT (Teensy - 52)
   //  PORTD_PCR14  |= PORT_PCR_MUX(2);           // PORTD14 - SPI2_SIN  (Teensy - 51)
 
+  // register setup
   // CLOCK enable - allows SPI(x) to operate
   SIM_SCGC6 |= SIM_SCGC6_SPI0;              // Enable SPI0 clock 
   SIM_SCGC6 |= SIM_SCGC6_SPI1;              // Enable SPI1 clock 
@@ -73,15 +78,8 @@ void initSPI()  // setup for 3 SPI instances and all available Teensy 3.5 pins
   SPI1_SR = CLEAR_SR;
 
   // Setup Registers - Master mode only - don't use FIFO on SPI0 (single value transfer)
-  SPI0_MCR  = SPI_MCR_MSTR | SPI_MCR_PCSIS(0x7) | SPI_MCR_DIS_TXF | SPI_MCR_DIS_RXF	| SPI_MCR_HALT; // PCIS 1-2-3 active low
-  SPI1_MCR  = SPI_MCR_MSTR | SPI_MCR_PCSIS(0x1)	| SPI_MCR_HALT;  // PCIS1 active low
-
-    // MC33810 parameters
-  SPI0_CTAR0 = SPI_CTAR_FMSZ(15) | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(0) | SPI_CTAR_PDT(0) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(2) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(5) | SPI_CTAR_BR(1);  // clock = F_BUS, BR = 3MHz
-  // CTAR1 needs timing parameters [P]CSSK, [P]ASC and [P]DT set to suit Flash chip
-  SPI0_CTAR1 = SPI_CTAR_FMSZ(7) | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(0) | SPI_CTAR_PDT(0) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(0) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(0) | SPI_CTAR_BR(1);  // clock = F_BUS, BR = 3MHz
-    // TPIC8101 parameters
-  SPI1_CTAR0 = SPI_CTAR_FMSZ(7)  | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(1) | SPI_CTAR_PDT(1) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(0) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(1) | SPI_CTAR_BR(1); // clock = F_BUS, BR = 3MHz
+  SPI0_MCR  |= SPI_MCR_MSTR | SPI_MCR_PCSIS(0x7) | SPI_MCR_DIS_TXF | SPI_MCR_DIS_RXF	| SPI_MCR_HALT; // PCIS 1-2-3 active low
+  SPI1_MCR  |= SPI_MCR_MSTR | SPI_MCR_PCSIS(0x1)	| SPI_MCR_HALT;  // PCIS1 active low
 
   // setup interrupts
   SPI0_RSER = 0x0 | SPI_RSER_EOQF_RE;   // 'Finished' Int Req Enable
@@ -89,66 +87,55 @@ void initSPI()  // setup for 3 SPI instances and all available Teensy 3.5 pins
   NVIC_ENABLE_IRQ(IRQ_SPI0);
   NVIC_ENABLE_IRQ(IRQ_SPI1);
 
-#if defined (USE_SPI2)
-  // SPI2 *** ALL ON POGO PINS ****
-  PORTB_PCR20 |= PORT_PCR_MUX(2);           // PORTB20 - SPI2_PCS0 (Teensy - 43) (CS2_1)
-  PORTD_PCR15 |= PORT_PCR_MUX(2);           // PORTD15 - SPI2_PCS1 (Teensy - 54) (CS2_2)
-  PORTB_PCR21 |= PORT_PCR_MUX(2);           // PORTB21 - SPI2_SCK  (Teensy - 46)
-  PORTB_PCR22 |= PORT_PCR_MUX(2);           // PORTB22 - SPI2_SOUT (Teensy - 44)
-  PORTB_PCR23 |= PORT_PCR_MUX(2);           // PORTB23 - SPI2_SIN  (Teensy - 45)
-  // ALT PINS
-  //  PORTD_PCR11  |= PORT_PCR_MUX(2);           // PORTD11 - SPI2_PCS0 (Teensy - 55)
-                                                 // NO SPI2_PCS1
-  //  PORTD_PCR12  |= PORT_PCR_MUX(2);           // PORTD12 - SPI2_SCK  (Teensy - 53)
-  //  PORTD_PCR13  |= PORT_PCR_MUX(2);           // PORTD13 - SPI2_SOUT (Teensy - 52)
-  //  PORTD_PCR14  |= PORT_PCR_MUX(2);           // PORTD14 - SPI2_SIN  (Teensy - 51)
+  // setup chip parameters
+    // MC33298 - spi_1&2 peripherals
+  SPI0_CTAR0 = SPI_CTAR_FMSZ(15) | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(0) | SPI_CTAR_PDT(0) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(2) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(5) | SPI_CTAR_BR(1);  // clock = F_BUS, BR = 3MHz
+    // Flash - spi1_3 peripheral
+    // CTAR1 needs timing parameters [P]CSSK, [P]ASC and [P]DT set to suit Flash chip 
+  SPI0_CTAR1 = SPI_CTAR_FMSZ(7) | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(0) | SPI_CTAR_PDT(0) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(0) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(0) | SPI_CTAR_BR(1);  // clock = F_BUS, BR = 3MHz
+    // TPIC8101
+  SPI1_CTAR0 = SPI_CTAR_FMSZ(7)  | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(1) | SPI_CTAR_PDT(1) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(0) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(1) | SPI_CTAR_BR(1); // clock = F_BUS, BR = 3MHz
+
+#if defined(USE_SPI2)
   SIM_SCGC3 |= SIM_SCGC3_SPI2;              // Enable SPI2 clock 
   SPI2_MCR &= ~SPI_MCR_MDIS;                // enable instance
-  SPI2_SR = CLEAR_SR;                       // clear any pending interrupts
-  SPI2_MCR  = SPI_MCR_MSTR | SPI_MCR_PCSIS(0x3)	| SPI_MCR_HALT; // PCIS 1-2 active low
+  SPI2_SR = CLEAR_SR;                       // clear any pending interrupts (just in case)
+  // proforma parameters (FMSZ = data length -1) 
+  SPI2_CTAR0 = SPI_CTAR_FMSZ(15) | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(0) | SPI_CTAR_PDT(0) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(2) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(5) | SPI_CTAR_BR(1);  // clock = F_BUS, BR = 3MHz
+  // Setup Registers - Master mode only
+  SPI2_MCR  |= SPI_MCR_MSTR | SPI_MCR_PCSIS(0x3)	| SPI_MCR_HALT; // PCIS 1-2 active low
   SPI2_RSER = 0x0 | SPI_RSER_EOQF_RE;       // 'Finished' Int Req Enable
   NVIC_ENABLE_IRQ(IRQ_SPI2);
-#endif
+#endif //USE_SPI2
 }
 
-void spi0_isr(void) // receive ISR
+void spi0_isr(void) // receive ISR - spi0 (supports up to 5 peripherals (two specific types only))
 {
   SPI0_MCR |= SPI_MCR_HALT;
-
-  // spi0 bus has three chips - 2 x MC333810 and Flash
-  uint16_t val;
-  uint8_t val1;
-  switch (SPI0_CS)
+  uint16_t ret=0;
+  switch ((SPI0_PUSHR & 0x70000) >> 16)  // data just transmitted
   {
     case CS0_1:
-      val = (uint16_t)SPI0_POPR; // 32 bit register
-      if (val)
-      {
-        // do something relating to MC33810-1 return data
-      }
+      ret = SPI0_POPR;
       break;
 
     case CS0_2:
-      val = (uint16_t)SPI0_POPR; // 32 bit register
-      if (val)
-      {
-        // do something relating to MC33810-2 return data
-      }
+      ret = SPI0_POPR;
       break;
 
     case CS0_3:
-      val1 = (uint8_t)SPI0_POPR;
-      if (val1)
-      {
-        // do something relating to Flash return data
-      }
+      ret = SPI0_POPR;
       break;
-
+    case CS0_4:
+    case CS0_5:
     default:
       break;
   }
-  SPI0_SR = CLEAR_SR;
-  SPI0_CS = 0;  // frame complete
+
+  // doing this here, rather than at entry, ensures that another interrupt won't be
+  // raised until this one completes. (Another spi0 transmission will be held until this interrupt completes.)
+  SPI0_SR = CLEAR_SR;         
+  txHold0 = 0;
 }
 
 void spi1_isr(void) // receive ISR - only a single hardware cs available on Teensy 3.5 for SPI1
@@ -160,15 +147,31 @@ void spi1_isr(void) // receive ISR - only a single hardware cs available on Teen
       // do something relating to TPIC8101 return data
     }
     SPI1_SR |= SPI_SR_EOQF; // clear the interrupt flag (w1c)
-    SPI1_CS = 0;
+    txHold1 = 0;
 }
 
-#if defined (USE_SPI2)
-void spi2_isr(void) // receive ISR
+sendFlash(uint32_t data)
+{
+  while(txHold0) {for (unsigned long t = micros(); (micros() - t) < TD;){};break;} // place an absolute time limit on block (just in case)
+  txHold0=1;\
+  SPI0_PUSHR = (0x0 | SPI_PUSHR_CTAS(1) | SPI_PUSHR_PCS(CS0_3) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT) | data; \
+  SPI0_MCR &= ~SPI_MCR_HALT;
+}
+
+sendSPI1(uint32_t data)
+{
+  while(txHold1) {for (unsigned long t = micros(); (micros() - t) < TD;){};break;}
+  txHold1=1;\
+  SPI1_PUSHR = (0x0 | SPI_PUSHR_CTAS(0) | SPI_PUSHR_PCS(CS1_1) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT) | data; \
+  SPI1_MCR &= ~SPI_MCR_HALT;
+}
+
+#if defined(USE_SPI2)
+void spi2_isr(void) // receive ISR - SPI2 supports 2 peripherals
 {
   SPI2_MCR |= SPI_MCR_HALT;
 
-  switch(SPI2_CS)
+  switch((SPI2_PUSHR & 0x70000) >> 16)
   {
     uint16_t val;
     case CS2_1:
@@ -190,72 +193,16 @@ void spi2_isr(void) // receive ISR
   }
 
   SPI2_SR = CLEAR_SR;
-  SPI2_CS = 0;
+  txHold2 = 0;
 }
-#endif
 
-/*
-// assumes Flash only used during startup, leaving MC33810 operations unimpeded, except for any attempt to overlap transmits,
-// in which case new transmit is paused until previous transmit completes.
-void sendSPI0(uint16_t data, uint8_t chipSel)
+void sendSPI2(uint16_t data, uint8_t chipSel) // supports 2 peripherals of the same specific type
 {
-  uint32_t pushVal = 0;
-  // prevent new transmit before receive complete
-  while (SPI0_CS != 0){} // cleared at end of receive isr
-
-  SPI0_CS = chipSel; // tell receive isr what chip responsible for the interrupt
-
-  switch(chipSel) // up to 5 peripherals
-  {
-    case CS0_1: // MC33810-1
-    case CS0_2: // MC33810-2
-      pushVal |= SPI_PUSHR_CTAS(0) | SPI_PUSHR_PCS(chipSel) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT | data; // MC33810
-      break;
-    case CS0_3: // Flash
-      pushVal |= SPI_PUSHR_CTAS(1) | SPI_PUSHR_PCS(chipSel) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT | data; // Flash
-      break;
-    case CS0_4: // spare
-    case CS0_5: // spare
-    default:
-      break;
-  }
-  SPI0_PUSHR = pushVal; // load the value into the double buffered register for transmission
-  SPI0_MCR &= START_INSTANCE;   // transmit
+  while(txHold2) {for (unsigned long t = micros(); (micros() - t) < TD;){};break;}
+  txHold2=1;\
+  SPI2_PUSHR = (0x0 | SPI_PUSHR_CTAS(0) | SPI_PUSHR_PCS(chipSel) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT) | data; \
+  SPI2_MCR &= ~SPI_MCR_HALT;
 }
-*/
+#endif //USE_SPI2
 
-inline void sendSPIO0_1(data) // ign and inj 1-4
-{
-  pushVal |= SPI_PUSHR_CTAS(0) | SPI_PUSHR_PCS(chipSel) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT | data; // MC33810
-  SPI0_MCR &= START_INSTANCE;   // transmit
-}
-
-inline void sendSPIO0_2() // ign and inj 5-8
-{
-  
-  SPI0_MCR &= START_INSTANCE;   // transmit
-}
-
-void sendSPI1(uint8_t val)  // support a single peripheral (Teensy 3.5 limitation)
-{
-  // prevent new transmit before receive complete
-  while (SPI1_CS != 0){} // cleared at end of receive processing
-  SPI1_CS = 1;
-  SPI1_PUSHR |= SPI_PUSHR_CTAS(0) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT | SPI_PUSHR_PCS(1) | val;
-  SPI1_MCR &= START_INSTANCE;
-}
-
-#if defined(USE_SPI2)
-void sendSPI2(uint16_t data, uint8_t chipSel) // supports 2 peripherals with a single parameter set
-{
-  uint32_t pushVal = 0;
-  // prevent new transmit before receive complete
-  while (SPI2_CS != 0){} // cleared at end of receive isr
-  SPI2_CS = chipSel; // tell receive isr what chip caused the interrupt
-  pushVal |= SPI_PUSHR_CTAS(0) | SPI_PUSHR_PCS(chipSel) | SPI_PUSHR_EOQ | SPI_PUSHR_CTCNT | data;
-
-  SPI2_PUSHR = pushVal; // load the value into the double buffered register for transmission
-  SPI2_MCR &= START_INSTANCE;   // transmit
-}
-#endif
-#endif
+#endif //SPI_METAL

@@ -8,6 +8,9 @@ A full copy of the license may be found in the projects root directory
 #include "scheduler.h"
 #include "scheduledIO.h"
 #include "knock.h"
+#if defined(SPI_METAL)
+  #include "SPI_metal.h"
+#endif
 
 FuelSchedule fuelSchedule1;
 FuelSchedule fuelSchedule2;
@@ -759,6 +762,8 @@ void setIgnitionSchedule8(void (*startCallback)(), unsigned long timeout, unsign
   }
 }
 
+
+
 /*******************************************************************************************************************************************************************************************************/
 //This function (All 8 ISR functions that are below) gets called when either the start time or the duration time are reached
 //This calls the relevant callback function (startCallback or endCallback) depending on the status of the schedule.
@@ -775,6 +780,7 @@ static inline void fuelSchedule1Interrupt() //Most ARM chips can simply call a f
     {
       //To use timer queue, change fuelShedule1 to timer3Aqueue[0];
       inj1StartFunction();
+
       fuelSchedule1.Status = RUNNING; //Set the status to be in progress (ie The start callback has been called, but not the end callback)
       FUEL1_COMPARE = FUEL1_COUNTER + uS_TO_TIMER_COMPARE(fuelSchedule1.duration); //Doing this here prevents a potential overflow on restarts
     }
@@ -1417,6 +1423,7 @@ static inline void ignitionSchedule8Interrupt() //Most ARM chips can simply call
 
 
 #if defined(CORE_TEENSY35)
+/*
 void ftm0_isr(void)
 {
   uint8_t status = FTM0_STATUS; // get all 8 channels
@@ -1432,7 +1439,7 @@ void ftm0_isr(void)
   if(status & FTM_STATUS_CH6F) { ignitionSchedule3Interrupt(); }
   if(status & FTM_STATUS_CH7F) { ignitionSchedule4Interrupt(); }
 }
-/*
+*/
 void ftm0_isr(void)
 {
   //Use separate variables for each test to ensure conversion to bool
@@ -1455,7 +1462,7 @@ void ftm0_isr(void)
   else if(interrupt8) { FTM0_C7SC &= ~FTM_CSC_CHF; ignitionSchedule4Interrupt(); }
 
 }
-*/
+/*
 void ftm3_isr(void)
 {
   uint8_t status = FTM3_STATUS;
@@ -1486,7 +1493,7 @@ void ftm3_isr(void)
   if(status & FTM_STATUS_CH7F) { ignitionSchedule8Interrupt(); }
 #endif
 }
-/*
+*/
 
 void ftm3_isr(void)
 {
@@ -1525,5 +1532,5 @@ void ftm3_isr(void)
 #endif
 
 }
-*/
+
 #endif

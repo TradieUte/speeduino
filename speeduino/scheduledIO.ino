@@ -3,41 +3,67 @@
 #include "globals.h"
 #include "timers.h"
 
-#if defined (BARRA)
+#if defined(SPI_METAL)
 #include "SPI_metal.h"
-  inline void openInjector1() { openInjector1_MC33810(); }
-  inline void closeInjector1() { closeInjector1_MC33810(); }
-  inline void openInjector2() { openInjector2_MC33810(); }
-  inline void closeInjector2() { closeInjector2_MC33810(); }
-  inline void openInjector3() { openInjector3_MC33810(); }
-  inline void closeInjector3() { closeInjector3_MC33810(); }
-  inline void openInjector4() { openInjector4_MC33810(); }
-  inline void closeInjector4() { closeInjector4_MC33810(); }
-  inline void openInjector5() { openInjector5_MC33810(); }
-  inline void closeInjector5() { closeInjector5_MC33810(); }
-  inline void openInjector6() { openInjector6_MC33810(); }
-  inline void closeInjector6() { closeInjector6_MC33810(); }
-  inline void openInjector7() { openInjector7_MC33810(); }
-  inline void closeInjector7() { closeInjector7_MC33810(); }
-  inline void openInjector8() { openInjector8_MC33810(); }
-  inline void closeInjector8() { closeInjector8_MC33810(); }#else
+
+//  Using MC33298
+  inline void openInjector1()  { INJ_MC33298((pinSelectMC33298 |= CH1_MASK)) }
+  inline void closeInjector1() { INJ_MC33298((pinSelectMC33298 &= ~CH1_MASK)) }
+  inline void openInjector2()  { INJ_MC33298((pinSelectMC33298 |= CH2_MASK)) }
+  inline void closeInjector2() { INJ_MC33298((pinSelectMC33298 &= ~CH2_MASK)) }
+  inline void openInjector3()  { INJ_MC33298((pinSelectMC33298 |= CH3_MASK)) }
+  inline void closeInjector3() { INJ_MC33298((pinSelectMC33298 &= ~CH3_MASK)) }
+  inline void openInjector4()  { INJ_MC33298((pinSelectMC33298 |= CH4_MASK)) }
+  inline void closeInjector4() { INJ_MC33298((pinSelectMC33298 &= ~CH4_MASK)) }
+  inline void openInjector5()  { INJ_MC33298((pinSelectMC33298 |= CH5_MASK)) }
+  inline void closeInjector5() { INJ_MC33298((pinSelectMC33298 &= ~CH5_MASK)) }
+  inline void openInjector6()  { INJ_MC33298((pinSelectMC33298 |= CH6_MASK)) }
+  inline void closeInjector6() { INJ_MC33298((pinSelectMC33298 &= ~CH6_MASK)) }
+  inline void openInjector7()  { INJ_MC33298((pinSelectMC33298 |= CH7_MASK)) }
+  inline void closeInjector7() { INJ_MC33298((pinSelectMC33298 &= ~CH7_MASK)) }
+  inline void openInjector8()  { INJ_MC33298((pinSelectMC33298 |= CH8_MASK)) }
+  inline void closeInjector8() { INJ_MC33298((pinSelectMC33298 &= ~CH8_MASK)) }
+
+// These are for Semi-Sequential and 5 Cylinder injection
+
+inline void openInjector1and4() { INJ_MC33298((pinSelectMC33298 |= CH1_MASK | CH4_MASK)) }
+inline void closeInjector1and4() { INJ_MC33298((pinSelectMC33298 &= ~(CH1_MASK | CH4_MASK))); }
+inline void openInjector2and3() { INJ_MC33298((pinSelectMC33298 |= CH2_MASK | CH3_MASK)) }
+inline void closeInjector2and3() { INJ_MC33298((pinSelectMC33298 &= ~(CH2_MASK | CH3_MASK))); }
+inline void openInjector3and5() { INJ_MC33298((pinSelectMC33298 |= CH3_MASK | CH5_MASK)) }
+inline void closeInjector3and5() { INJ_MC33298((pinSelectMC33298 &= ~(CH3_MASK | CH5_MASK))); }
+inline void openInjector2and5() { INJ_MC33298((pinSelectMC33298 |= CH2_MASK | CH5_MASK)) }
+inline void closeInjector2and5() { INJ_MC33298((pinSelectMC33298 &= ~(CH2_MASK | CH5_MASK))); }
+inline void openInjector3and6() { INJ_MC33298((pinSelectMC33298 |= CH3_MASK | CH6_MASK)) }
+inline void closeInjector3and6() { INJ_MC33298((pinSelectMC33298 &= ~(CH3_MASK | CH6_MASK))); }
+inline void openInjector1and5() { INJ_MC33298((pinSelectMC33298 |= CH1_MASK | CH5_MASK)) }
+inline void closeInjector1and5() { INJ_MC33298((pinSelectMC33298 &= ~(CH1_MASK | CH5_MASK))); }
+inline void openInjector2and6() { INJ_MC33298((pinSelectMC33298 |= CH2_MASK | CH6_MASK)) }
+inline void closeInjector2and6() { INJ_MC33298((pinSelectMC33298 &= ~(CH2_MASK | CH6_MASK))); }
+inline void openInjector3and7() { INJ_MC33298((pinSelectMC33298 |= CH3_MASK | CH7_MASK)) }
+inline void closeInjector3and7() { INJ_MC33298((pinSelectMC33298 &= ~(CH3_MASK | CH7_MASK))); }
+inline void openInjector4and8() { INJ_MC33298((pinSelectMC33298 |= CH4_MASK | CH8_MASK)) }
+inline void closeInjector4and8() { INJ_MC33298((pinSelectMC33298 &= ~(CH4_MASK | CH8_MASK))); }
+
+#else
+
 #ifndef USE_MC33810
   inline void openInjector1() { *inj1_pin_port |= (inj1_pin_mask); BIT_SET(currentStatus.status1, BIT_STATUS1_INJ1); }
-  inline void closeInjector1() { *inj1_pin_port &= ~(inj1_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ1); }
+  inline void closeInjector1() { *inj1_pin_port &= ~ (inj1_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ1); }
   inline void openInjector2() { *inj2_pin_port |= (inj2_pin_mask); BIT_SET(currentStatus.status1, BIT_STATUS1_INJ2); }
-  inline void closeInjector2() { *inj2_pin_port &= ~(inj2_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ2); }
+  inline void closeInjector2() { *inj2_pin_port &= ~ (inj2_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ2); }
   inline void openInjector3() { *inj3_pin_port |= (inj3_pin_mask); BIT_SET(currentStatus.status1, BIT_STATUS1_INJ3); }
-  inline void closeInjector3() { *inj3_pin_port &= ~(inj3_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ3); }
+  inline void closeInjector3() { *inj3_pin_port &= ~ (inj3_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ3); }
   inline void openInjector4() { *inj4_pin_port |= (inj4_pin_mask); BIT_SET(currentStatus.status1, BIT_STATUS1_INJ4); }
-  inline void closeInjector4() { *inj4_pin_port &= ~(inj4_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ4); }
+  inline void closeInjector4() { *inj4_pin_port &= ~ (inj4_pin_mask);  BIT_CLEAR(currentStatus.status1, BIT_STATUS1_INJ4); }
   inline void openInjector5() { *inj5_pin_port |= (inj5_pin_mask); }
-  inline void closeInjector5() { *inj5_pin_port &= ~(inj5_pin_mask); }
+  inline void closeInjector5() { *inj5_pin_port &= ~ (inj5_pin_mask); }
   inline void openInjector6() { *inj6_pin_port |= (inj6_pin_mask); }
-  inline void closeInjector6() { *inj6_pin_port &= ~(inj6_pin_mask); }
+  inline void closeInjector6() { *inj6_pin_port &= ~ (inj6_pin_mask); }
   inline void openInjector7() { *inj7_pin_port |= (inj7_pin_mask); }
-  inline void closeInjector7() { *inj7_pin_port &= ~(inj7_pin_mask); }
+  inline void closeInjector7() { *inj7_pin_port &= ~ (inj7_pin_mask); }
   inline void openInjector8() { *inj8_pin_port |= (inj8_pin_mask); }
-  inline void closeInjector8() { *inj8_pin_port &= ~(inj8_pin_mask); }
+  inline void closeInjector8() { *inj8_pin_port &= ~ (inj8_pin_mask); }
 #else
 #include "acc_mc33810.h"
   inline void openInjector1() { openInjector1_MC33810(); }
@@ -59,6 +85,7 @@
 #endif
 #endif
 
+#if !defined(SPI_METAL)
 // These are for Semi-Sequential and 5 Cylinder injection
 void openInjector1and4() { openInjector1(); openInjector4(); }
 void closeInjector1and4() { closeInjector1(); closeInjector4(); }
@@ -81,6 +108,7 @@ void openInjector3and7() { openInjector3(); openInjector7(); }
 void closeInjector3and7() { closeInjector3(); closeInjector7(); }
 void openInjector4and8() { openInjector4(); openInjector8(); }
 void closeInjector4and8() { closeInjector4(); closeInjector8(); }
+#endif
 
 #ifndef USE_MC33810
 // changes for new tacho
@@ -118,7 +146,7 @@ void closeInjector4and8() { closeInjector4(); closeInjector8(); }
   //The below 3 calls are all part of the rotary ignition mode
   inline void beginTrailingCoilCharge() { digitalWrite(pinCoil2, coilHIGH); }
   inline void endTrailingCoilCharge1() { digitalWrite(pinCoil2, coilLOW); *ign3_pin_port |= ign3_pin_mask; } //Sets ign3 (Trailing select) high
-  inline void endTrailingCoilCharge2() { digitalWrite(pinCoil2, coilLOW); *ign3_pin_port &= ~(ign3_pin_mask); } //sets ign3 (Trailing select) low
+  inline void endTrailingCoilCharge2() { digitalWrite(pinCoil2, coilLOW); *ign3_pin_port &= ~ (ign3_pin_mask); } //sets ign3 (Trailing select) low
 
   //As above but for ignition (Wasted COP mode)
   void beginCoil1and3Charge() { digitalWrite(pinCoil1, coilHIGH); digitalWrite(pinCoil3, coilHIGH); TACHO_OUTPUT_FLAG_READY; }

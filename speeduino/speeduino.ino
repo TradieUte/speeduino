@@ -330,14 +330,17 @@ void loop()
       readBaro(); //Infrequent baro readings are not an issue.
 #if defined(DIAG)
     DSERIAL.printf("BRD %d CYL %d IGN %d INJ %d\n",configPage2.pinMapping,configPage2.nCylinders,configPage4.sparkMode,configPage2.injLayout);
-    if (DIAG1) {DSERIAL.printf("D1 %d\n",DIAG1);}
-    if (DIAG2) {DSERIAL.printf("D2 %d\n",DIAG2);}
-    if (DIAG3) {DSERIAL.printf("D3 %d\n",DIAG3);}
-    if (DIAG4) {DSERIAL.printf("D4 %d\n",DIAG4);}
-    if (DIAG5) {DSERIAL.printf("D5 %d\n",DIAG5);}
-    if (DIAG6) {DSERIAL.printf("D6 %d\n",DIAG6);}
-    if (DIAG7) {DSERIAL.printf("D7 %d\n",DIAG7);}
-    if (DIAG8) {DSERIAL.printf("D8 %d\n",DIAG8);}
+    if (DIAG1) {DSERIAL.printf("D1 %.8x\n",DIAG1);}
+    if (DIAG2) {DSERIAL.printf("D2 %.8x\n",DIAG2);}
+    if (DIAG3) {DSERIAL.printf("D3 %.8x\n",DIAG3);}
+    if (DIAG4) {DSERIAL.printf("D4 %.8x\n",DIAG4);}
+    if (DIAG5) {DSERIAL.printf("D5 %.8x\n",DIAG5);}
+    if (DIAG6) {DSERIAL.printf("D6 %.8x\n",DIAG6);}
+    if (DIAG7) {DSERIAL.printf("D7 %.8x\n",DIAG7);}
+    if (DIAG8) {DSERIAL.printf("D8 %.8d\n",DIAG8);}
+    if (DIAG9) {DSERIAL.printf("D9 %.8d\n",DIAG9);}
+    if (DIAGA) {DSERIAL.printf("DA %.8d\n",DIAGA);}
+    if (DIAGB) {DSERIAL.printf("DB %.8d\n",DIAGB);}
     DIAG1=0;
     DIAG2=0;
     DIAG3=0;
@@ -346,6 +349,9 @@ void loop()
     DIAG6=0;
     DIAG7=0;
     DIAG8=0;
+    DIAG9=0;
+    DIAGA=0;
+    DIAGB=0;
 #endif
 #if defined(CORE_TEENSY) //debug purpose, only visal for running code
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));

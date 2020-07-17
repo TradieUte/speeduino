@@ -3,7 +3,9 @@
 #include <Arduino.h>
 #include "table.h"
 #include <assert.h>
+#if !defined(SPI_METAL)
 #include <SPI.h>
+#endif
 
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__)
   #define BOARD_DIGITAL_GPIO_PINS 54
@@ -40,7 +42,7 @@
     #define SD_LOGGING //SD logging enabled by default for Teensy 3.5 as it has the slot built in
     #define DIAG
 //    #define KNOCK
-    #define BARRA
+    #define SPI_METAL
     #define DSERIAL Serial1  // Barra and X3 beta version
 
   #elif defined(__IMXRT1062__)
@@ -58,6 +60,9 @@
   volatile unsigned long DIAG6 = 0;
   volatile unsigned long DIAG7 = 0;
   volatile unsigned long DIAG8 = 0;
+  volatile unsigned long DIAG9 = 0;
+  volatile unsigned long DIAGA = 0;
+  volatile unsigned long DIAGB = 0;
   #endif
 
 #elif defined(STM32_MCU_SERIES) || defined(ARDUINO_ARCH_STM32) || defined(STM32)
@@ -1210,11 +1215,10 @@ extern byte pinVVT_2;		// vvt output 2
 extern byte pinFan;       // Cooling fan output
 extern byte pinIMCC;     // Intake Manifold Charge Control
 extern byte pinKnockWin;
+#if !defined(SPI_METAL)
 extern byte CS0;  // TPC8101 - knock
-extern byte CS1;  // FLASH on PCB
-extern byte CS2;  // DriveByWire processor
 extern byte SCK0; // alternative clock - leave LED_BUILTIN = 13 available
-
+#endif
 extern byte pinStepperDir; //Direction pin for the stepper motor driver
 extern byte pinStepperStep; //Step pin for the stepper motor driver
 extern byte pinStepperEnable; //Turning the DRV8825 driver on/off

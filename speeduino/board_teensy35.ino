@@ -346,6 +346,7 @@ void pit1_isr() // Tach pulse end (oneshot)
   TACHO_PULSE_HIGH();
 }
 
+#if !defined(SPI_METAL)
 // called by each ignition isr at the end of the ign dwell
 static inline void launchKnockWindow()
 {
@@ -353,7 +354,7 @@ static inline void launchKnockWindow()
   PIT_TFLG2 = 1;               // clear interrupt flag
   PIT_TCTRL2 |= PIT_TCTRL_TEN; // start timer
 }
-
+#endif
 #if defined(KNOCK)
 // PIT2 (oneshot) determines the time between ignition pulse start and knock window start
 // when PIT2 interrupts, start the knock window duration timer PIT3

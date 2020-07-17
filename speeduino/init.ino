@@ -222,6 +222,11 @@ void initialiseAll()
     }
     else { setPinMapping(configPage2.pinMapping); }
 
+    // need to put following here so that closeInjectorX functions are available
+    #if defined(SPI_METAL)
+      initSPI();  // selects all pins associated with SPI, at a portmux level and sets interrupts
+    #endif
+
     //Need to check early on whether the coil charging is inverted. If this is not set straight away it can cause an unwanted spark at bootup
     if(configPage4.IgInv == 1) { coilHIGH = LOW; coilLOW = HIGH; }
     else { coilHIGH = HIGH; coilLOW = LOW; }
@@ -2105,10 +2110,10 @@ void setPinMapping(byte boardID)
       pinKnockWin = 25; // TPIC8101 integrate/hold
       pinTachOut = 26;  // Tacho output 
       pinFuelPump = 27; // Fuel pump output 
-
+#if !defined(SPI_METAL)
       SCK0 = 14;        // alternate clock - leave 13 for LED
       CS0 = 32;         // TPIC8101 (knock) select
-
+#endif
       // pin1 RX1
       // pin2 TX1
       // pin11 MOSI0
@@ -2121,62 +2126,63 @@ void setPinMapping(byte boardID)
       break;
  
       case 58:
-      //Pin mappings as per the teensy 3.5 FV6.0 board shield
-      pinInjector1 = 5;
-      pinInjector2 = 6;
-      pinInjector3 = 7;
-      pinInjector4 = 8;
-      pinInjector5 = 9;
-      pinInjector6 = 10;
-      pinInjector7 = 22;
-      pinInjector8 = 23;
+      //Pin mappings as per the teensy 3.5 FV6.1 board shield
 
-      pinCoil1 = 21;
-      pinCoil2 = 20;
-      pinCoil3 = 19;
-      pinCoil4 = 18;
-      pinCoil5 = 17;
-      pinCoil6 = 16;
-      pinCoil7 = 30;
-      pinCoil8 = 31;      
+      pinCLT  = A10;    // `A10 CLT sensor 
+      pinIAT  = A11;    // `A11 IAT sensor 
+      pinMAP  = A15;    // `34 MAP sensor 
+      pinO2   = A21;    // `A21 O2 sensor 
+      pinBat  = A22;    // `A22 Battery reference voltage 
+      pinO2_2 = A1;     // `15 O2-2 sensor 
+      pinEMAP = A2;     // `16 
+      pinBaro = A3;     // `17 Baro sensor 
+      pinTPS  = A4;     // `18 Alt TPS for Barra
 
-      pinCLT  = A10;    // A10 CLT sensor 
-      pinIAT  = A11;    // A11 IAT sensor 
-      pinMAP  = A15;    // 34 MAP sensor 
-      pinO2   = A21;    // A21 O2 sensor 
-      pinBat  = A22;    // A22 Battery reference voltage 
-      pinO2_2 = A23;    // 49 O2-2 sensor 
-      pinEMAP = A25;    // A24
-      pinBaro = A26;    // A26 Baro sensor 
+      pinTachOut  = 2;  // `Tacho output
+      pinKnockWin = 24; // `Integrate/Hold for TPIC8101
+      pinLaunch   = 25; // `Launch input
+      pinTrigger  = 26; // `Crank sensor 
+      pinTrigger3 = 27; // `ICam Sensor      
+      pinTrigger2 = 28; // `ECam Sensor 
+      pinIMCC     = 29; // `Intake Manifold Charge Control (Ford L6 Barra)        
+      pinFan      = 35; // `Fan output
+      pinFuelPump = 36; // `Fuel pump output
+      pinVVT_1    = 37; // `VVT1 output
+      pinVVT_2    = 38; // `VVT2 output
+      pinVSS      = 39; // `Vehicle Speed Control
+      pinFlex     = 11; // `Flex sensor input
+      pinBoost    = 6;  // `Boost control output
+      pinIdleUp   = 12; // `Idle Up output
 
-      pinTachOut  = 2;  // Tacho output 
-      SCK0        = 14; // Flash, Knock and Throttle Clock (alternate clock)
-      pinKnockWin = 24; // Integrate/Hold for TPIC8101
-      pinLaunch   = 25; // Launch input
-      pinTrigger  = 26; // Crank sensor 
-      pinTrigger3 = 27; // ICam Sensor      
-      pinTrigger2 = 28; // ECam Sensor 
-      pinIMCC     = 29; // Intake Manifold Charge Control (Ford L6 Barra)        
-      pinFan      = 35; // Fan output
-      pinFuelPump = 36; // Fuel pump output
-      pinVVT_1    = 37; // VVT1 output
-      pinVVT_2    = 38; // VVT2 output
-      pinVSS      = 39; // Vehicle Speed Control
-      pinFlex     = 47; // Flex sensor input
-      pinBoost    = 48; // Boost control output
-      pinIdleUp   = 50; // Idle Up output
+// temp for testing 
+      pinCoil1 = 19;
+      pinCoil2 = 33;
+      pinCoil3 = 23;
+      pinCoil4 = 30;
+      pinCoil5 = 40;
+      pinCoil6 = 41;
+      pinCoil7 = 52;
+      pinCoil8 = 53;
+      // pins reserved for inter chip communication
+      // RX1   = `0
+      // RX2   = `1
+      // CANTX = `3
+      // CANRX = `4
+      // MOSI0 = `7 
+      // MISO0 = `8
+      // CS0_2 = `9
+      // CS0_1 = `10
+      // CS0_3 = `20
+      // SCK0  = `14
+      // MOSI1 = `21
+      // MISO1 = `5
+      // CS1_1 = `31
+      // SCK1  = `32
 
-      // reserved pins
-      CS0      = 32;         // Chip Select; Knock
-      CS1      = 33;         // Chip select; Flash
-      CS2      = 15;         // Chip select; DriveByWire Throttle
-      // RX1   = 0
-      // RX2   = 1
-      // CANTX = 3
-      // CANRX = 4
-      // MOSI0 = 11 
-      // MISO0 = 12
-      // LED   = 13
+      // LED   = `13
+
+      // available pins - excludes pads 40-57
+      // 19-A5, 22-A8, 23-A9, 30, A25, A26
 
       // trigger angle = 300
       // injector rate = ?? cc/pin
@@ -2526,9 +2532,9 @@ void setPinMapping(byte boardID)
   pinMode(pinBoost, OUTPUT);
   pinMode(pinVVT_1, OUTPUT);
   pinMode(pinVVT_2, OUTPUT);
+#if !defined(SPI_METAL)
   pinMode(CS0, OUTPUT);  // Chip Select; Knock
-  pinMode(CS1, OUTPUT);  // Chip select; Flash
-  pinMode(CS2, OUTPUT);  // Chip select; FlyByWire Throttle
+#endif
 
   //This is a legacy mode option to revert the MAP reading behaviour to match what was in place prior to the 201905 firmware
   if(configPage2.legacyMAP > 0) { digitalWrite(pinMAP, HIGH); }
