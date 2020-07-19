@@ -1215,7 +1215,7 @@ extern byte pinVVT_2;		// vvt output 2
 extern byte pinFan;       // Cooling fan output
 extern byte pinIMCC;     // Intake Manifold Charge Control
 extern byte pinKnockWin;
-#if !defined(SPI_METAL)
+#ifndef SPI_METAL
 extern byte CS0;  // TPC8101 - knock
 extern byte SCK0; // alternative clock - leave LED_BUILTIN = 13 available
 #endif

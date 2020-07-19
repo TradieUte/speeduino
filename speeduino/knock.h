@@ -1,14 +1,16 @@
 #ifndef KNOCK_H
 #define KNOCK_H
-#if !defined(SPI_METAL)
-
+#ifdef KNOCK
+#ifdef SPI_METAL
+  #include "SPI_metal.h"
+#endif
 #include "globals.h"
 
 static inline void launchKnockWindow();
 static inline void getKnockValue();
 void initialiseKnock();
-static inline void determineRetard();
-static inline uint8_t sendCmd(uint8_t);
+void determineRetard();
+uint8_t sendCmd(uint8_t);
 void refreshKnockParameters(void);
 volatile int knock_threshold = 0;
 volatile bool knockRecoveryFirstStepDelay = false;
@@ -62,8 +64,10 @@ int integratorGain = 0;
 
 #define OPEN_KNOCK_WINDOW() *knock_win_pin_port |= (knock_win_pin_mask) 
 #define CLOSE_KNOCK_WINDOW() *knock_win_pin_port &= ~(knock_win_pin_mask)
-//#define CS0_ASSERT() digitalWrite(CS0, LOW)
-//#define CS0_RELEASE() digitalWrite(CS0, HIGH)
+#ifndef SPI_METAL
+  #define CS0_ASSERT() digitalWrite(CS0, LOW)
+  #define CS0_RELEASE() digitalWrite(CS0, HIGH)
+#endif
 
 #endif
 #endif

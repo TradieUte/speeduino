@@ -88,9 +88,10 @@ void initSPI()  // setup for 3 SPI instances and all available Teensy 3.5 pins.
   NVIC_ENABLE_IRQ(IRQ_SPI1);
 
   // setup chip parameters
-    // MC33298 - spi_1&2 peripherals
-  SPI0_CTAR0 = SPI_CTAR_FMSZ(15) | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(0) | SPI_CTAR_PDT(0) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(2) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(5) | SPI_CTAR_BR(1);  // clock = F_BUS, BR = 3MHz
-    // Flash - spi1_3 peripheral
+    // MC33298 - spi_1&2 peripherals - 6 MHz clock
+//  SPI0_CTAR0 = SPI_CTAR_FMSZ(15) | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(0) | SPI_CTAR_PDT(0) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(2) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(5) | SPI_CTAR_BR(1);  // clock = F_BUS, BR = 3MHz
+  SPI0_CTAR0 = SPI_CTAR_FMSZ(15) | SPI_CTAR_PCSSCK(1) | SPI_CTAR_PASC(0) | SPI_CTAR_PDT(0) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(0) | SPI_CTAR_ASC(1) | SPI_CTAR_DT(5) | SPI_CTAR_BR(0);  // clock = F_BUS, BR = 6MHz
+   // Flash - spi1_3 peripheral
     // CTAR1 needs timing parameters [P]CSSK, [P]ASC and [P]DT set to suit Flash chip 
   SPI0_CTAR1 = SPI_CTAR_FMSZ(7) | SPI_CTAR_PCSSCK(0) | SPI_CTAR_PASC(0) | SPI_CTAR_PDT(0) | SPI_CTAR_PBR(2) | SPI_CTAR_CSSCK(0) | SPI_CTAR_ASC(0) | SPI_CTAR_DT(0) | SPI_CTAR_BR(1);  // clock = F_BUS, BR = 3MHz
     // TPIC8101
@@ -141,16 +142,12 @@ void spi0_isr(void) // receive ISR - spi0 (supports up to 5 peripherals (two spe
 void spi1_isr(void) // receive ISR - only a single hardware cs available on Teensy 3.5 for SPI1
 {
     SPI1_MCR |= SPI_MCR_HALT;
-    uint8_t val = (uint8_t)SPI1_POPR; // 32 bit register
-    if (val)
-    {
-      // do something relating to TPIC8101 return data
-    }
+    spi1Val = (uint8_t)SPI1_POPR; // 32 bit register
     SPI1_SR |= SPI_SR_EOQF; // clear the interrupt flag (w1c)
     txHold1 = 0;
 }
 
-sendFlash(uint32_t data)
+void sendFlash(uint16_t data)
 {
   while(txHold0) {for (unsigned long t = micros(); (micros() - t) < TD;){};break;} // place an absolute time limit on block (just in case)
   txHold0=1;\
@@ -158,7 +155,7 @@ sendFlash(uint32_t data)
   SPI0_MCR &= ~SPI_MCR_HALT;
 }
 
-sendSPI1(uint32_t data)
+void sendSPI1(uint8_t data)
 {
   while(txHold1) {for (unsigned long t = micros(); (micros() - t) < TD;){};break;}
   txHold1=1;\

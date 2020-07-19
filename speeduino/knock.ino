@@ -1,11 +1,10 @@
-#if !defined(SPI_METAL)
-
 #if defined(KNOCK)
 #include "knock.h"
 #include "globals.h"
 #include "sensors.h"
-#include <SPI.h>
-
+#ifndef SPI_METAL
+  #include <SPI.h>
+#endif
 // two driving functions are required to use this code.
 // the first function runs the macro OPEN_KNOCK_WINDOW at the correct time following each ignition event
 // the second function calls getKnockValue() at the end of each knock window. (CLOSE_KNOCK_WINDOW is embedded)
@@ -22,10 +21,12 @@ void initialiseKnock()
     integratorGain = 121530 / configPage10.knock_sensor_output; // sensor out in mVpp scaled to Vpp
     // setup SPI for knock detector TPIC8101 - NB the chip uses CS to load values to internal registers
     uint8_t ret;
+#ifndef SPI_METAL
     SPI.setSCK(SCK0); // alternate clock pin to leave LED_BUILTIN free
     SPI.begin();      // init CPU hardware
     knockSettings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
     SPI.beginTransaction(knockSettings);
+#endif
     ret = sendCmd(PS_SDO_STAT_CMD); // set prescaler for 8MHz input; SDO active
     if (ret == PS_SDO_STAT_CMD)     // if not already in advanced mode, continue. NB requires power off to change
     {
@@ -36,7 +37,9 @@ void initialiseKnock()
       sendCmd(INT_TC_CMD | 20);     // set integrationTimeConstant
       sendCmd(ADV_MODE_CMD);        // set advanced mode - allows receiving integrator data - clearing advanced mode requires power off
     }
+#ifndef SPI_METAL
     SPI.endTransaction();
+#endif
 }
   else
   {
@@ -44,6 +47,7 @@ void initialiseKnock()
   }
 }
 
+#ifndef SPI_METAL
 static inline uint8_t sendCmd(uint8_t cmd)
 {
   uint8_t val = 0;
@@ -52,6 +56,16 @@ static inline uint8_t sendCmd(uint8_t cmd)
   CS0_RELEASE();
   return (val);
 }
+#else
+static inline uint8_t sendCmd(uint8_t cmd)
+{
+  sendSPI1(cmd);
+  // wait until data received
+  while(txHold1) {for (unsigned long t = micros(); (micros() - t) < TD;){};break;}
+  // spi1_isr() has finished
+  return(spi1Val);
+}
+#endif
 
 void refreshKnockParameters() // must only be called when RPM > 0
 {
@@ -80,15 +94,19 @@ static inline void getKnockValue()
   uint8_t lowByte;
   uint8_t highByte;
   int knockValue = 0;
+#ifndef SPI_METAL
   // get knock Value - takes 16 uSec with 2MHz clock
   SPI.beginTransaction(knockSettings);
   CS0_ASSERT();  
+#endif
   sendCmd(REQUEST_LOW_BYTE);  // also sets prescaler
   lowByte = sendCmd(REQUEST_HIGH_BYTE); // also sets the channel
   // rpmModGain_idx and integrator_time_constant_idx set in main loop (4Hz)
   highByte = sendCmd(INT_GAIN_CMD | rpmModGain_idx); //  refresh gain - changes with rpm
   sendCmd(INT_TC_CMD | integrator_time_constant_idx); // refresh itc - changes with rpm
+#ifndef SPI_METAL
   SPI.endTransaction();
+#endif
   knockValue = (knockValue | highByte) << 2; // already shifted 6 bits
   knockValue |= lowByte;
   if (knockValue > knock_threshold)
@@ -97,7 +115,8 @@ static inline void getKnockValue()
   }
 }
 
-static inline void determineRetard()
+// called every 100mS in counter loop
+void determineRetard()
 {
   // knock intervals all in 100ms increments in Tuner Studio
   // knockCounter is incremented when using Teensy by pit3_isr
@@ -222,5 +241,4 @@ uint8_t closestIndex(int idx1, int idx2, int array[], int reqVal)
     return (idx2);
   }
 }
-#endif
 #endif
