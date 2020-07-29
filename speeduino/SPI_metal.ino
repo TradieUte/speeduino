@@ -17,25 +17,25 @@ void initSPI()  // setup for 3 SPI instances and all available Teensy 3.5 pins.
 {
   // All available SPI port MUX is listed; select as required
   // SPI0
-  PORTC_PCR4 |= PORT_PCR_MUX(2);            // PORTC4 - SPI0_PCS0 (Teensy - 10) (CS0_1)
-  PORTC_PCR3 |= PORT_PCR_MUX(2);            // PORTC3 - SPI0_PCS1 (Teensy - 9)  (CS0_2)
-  PORTD_PCR5 |= PORT_PCR_MUX(2);            // PORTD5 - SPI0_PCS2 (Teensy - 20) (CS0_3)
-//  PORTD_PCR6 |= PORT_PCR_MUX(2);            // PORTD6 - SPI0_PCS3 (Teensy - 21) (CS0_4)
-//  PORTC_PCR0 |= PORT_PCR_MUX(2);            // PORTC0 - SPI0_PCS4 (Teensy - 15) (CS0_5)
+  PORTC_PCR4 |= PORT_PCR_MUX(2);            // PORTC4 - SPI0_PCS0 (Teensy - 10) (CS0_0)
+  PORTC_PCR3 |= PORT_PCR_MUX(2);            // PORTC3 - SPI0_PCS1 (Teensy - 9)  (CS0_1)
+  PORTD_PCR5 |= PORT_PCR_MUX(2);            // PORTD5 - SPI0_PCS2 (Teensy - 20) (CS0_2)
+  PORTC_PCR1  |= PORT_PCR_MUX(2);           // PORTC1 - SPI0_PCS3 (Teensy - 22) (CS0_3)
+  PORTC_PCR6  |= PORT_PCR_MUX(2);           // PORTC6 - SPI0_SOUT (Teensy - 11
+  PORTC_PCR7  |= PORT_PCR_MUX(2);           // PORTC7 - SPI0_SIN  (Teensy - 12)
   PORTD_PCR1 |= PORT_PCR_MUX(2);            // PORTD1 - SPI0_SCK  (Teensy - 14)
-  PORTD_PCR2 |= PORT_PCR_MUX(2);            // PORTD2 - SPI0_SOUT (Teensy - 7)
-  PORTD_PCR3 |= PORT_PCR_MUX(2);            // PORTD3 - SPI0_SIN  (Teensy - 8)
   // SPI0 ALT PINS
+  //  PORTD_PCR2 |= PORT_PCR_MUX(2);            // PORTD2 - SPI0_SOUT (Teensy - 7)
+  //  PORTD_PCR3 |= PORT_PCR_MUX(2);            // PORTD3 - SPI0_SIN  (Teensy - 8)
+  //  PORTC_PCR0 |= PORT_PCR_MUX(2);            // PORTC0 - SPI0_PCS4 (Teensy - 15) (CS0_4)
   //  PORTA_PCR14 |= PORT_PCR_MUX(2);            // PORTA14 - SPI0_PCS0 (Teensy - 26)
   //  PORTD_PCR0  |= PORT_PCR_MUX(2);            // PORTD0  - SPI0_PCS0 (Teensy - 2)
   //  PORTD_PCR4  |= PORT_PCR_MUX(2);            // PORTD4  - SPI0_PCS1 (Teensy - 6)
   //  PORTC_PCR2  |= PORT_PCR_MUX(2);            // PORTC2  - SPI0_PCS2 (Teensy - 23)
-  //  PORTC_PCR1  |= PORT_PCR_MUX(2);            // PORTC1  - SPI0_PCS3 (Teensy - 22)
+  //  PORTD_PCR6 |= PORT_PCR_MUX(2);             // PORTD6  - SPI0_PCS3 (Teensy - 21)
   //  PORTC_PCR5  |= PORT_PCR_MUX(2);            // PORTC5  - SPI0_SCK  (Teensy - 13)
   //  PORTA_PCR15 |= PORT_PCR_MUX(2);            // PORTA15 - SPI0_SCK  (Teensy - 27)
-  //  PORTC_PCR6  |= PORT_PCR_MUX(2);            // PORTC6  - SPI0_SOUT (Teensy - 11
   //  PORTA_PCR16 |= PORT_PCR_MUX(2);            // PORTA16 - SPI0_SOUT (Teensy - 28)
-  //  PORTC_PCR7  |= PORT_PCR_MUX(2);            // PORTC7 -  SPI0_SIN  (Teensy - 12)
   //  PORTA_PCR17 |= PORT_PCR_MUX(2);            // PORTA17 - SPI0_SIN  (Teensy - 39)
 
   // SPI1
